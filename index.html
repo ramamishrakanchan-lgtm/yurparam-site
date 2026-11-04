@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f1">
+  <title>AyurParam Chat</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #46331f;
+      --muted: #817360;
+      --green: #a6531b;
+      --green-dark: #874314;
+      --paper: #fffefa;
+      --line: #eee5d7;
+      --wash: #fff7e8;
+      --user: #fff1d2;
+      --shadow: 0 24px 70px rgba(91, 61, 25, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 32px 20px;
+      color: var(--ink);
+      background-color: #faf6ed;
+      background-image: radial-gradient(#e9ddc9 0.7px, transparent 0.7px);
+      background-size: 19px 19px;
+      font-family: "Noto Sans Devanagari", "Nirmala UI", "Segoe UI", sans-serif;
+    }
+
+    button, textarea { font: inherit; }
+
+    .shell {
+      width: min(100%, 760px);
+      margin: 0 auto;
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 2px 15px;
+      color: #756755;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark { display: flex; align-items: center; gap: 9px; }
+    .sun-mark {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border-radius: 50%;
+      color: #9c4a16;
+      background: #ffe4a8;
+    }
+    .sun-mark svg { width: 19px; height: 19px; }
+
+    .status { display: flex; align-items: center; gap: 7px; letter-spacing: 0; text-transform: none; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #78a16e; }
+
+    .chat {
+      overflow: hidden;
+      border: 1px solid rgba(220, 226, 216, .9);
+      border-radius: 18px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      min-height: 124px;
+      place-items: center;
+      overflow: hidden;
+      padding: 20px;
+      color: #713e18;
+      background: #f2bd55;
+    }
+
+    .hero::after {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 84px;
+      height: 84px;
+      border: 1px solid rgba(255, 250, 229, .45);
+      border-radius: 50%;
+      box-shadow: 0 0 0 15px rgba(255, 250, 229, .15), 0 0 0 31px rgba(255, 250, 229, .11);
+      content: "";
+      transform: translate(-50%, -50%);
+    }
+
+    .hero-sun { position: relative; z-index: 1; width: 122px; height: 122px; overflow: visible; transform: translateY(-10px); }
+
+    .conversation {
+      display: flex;
+      min-height: 330px;
+      max-height: 48vh;
+      flex-direction: column;
+      gap: 19px;
+      overflow-y: auto;
+      padding: 25px 30px 22px;
+      scroll-behavior: smooth;
+    }
+
+    .message { display: flex; align-items: flex-start; gap: 10px; animation: appear .24s ease-out both; }
+    .message.user { justify-content: flex-end; }
+    .avatar {
+      display: grid;
+      width: 29px;
+      height: 29px;
+      flex: 0 0 29px;
+      place-items: center;
+      border: 1px solid #f0dfc0;
+      border-radius: 10px;
+      color: #a6531b;
+      background: #fff7e8;
+    }
+    .avatar svg { width: 18px; height: 18px; }
+
+    .bubble {
+      max-width: min(84%, 510px);
+      padding: 12px 15px;
+      border: 1px solid var(--line);
+      border-radius: 3px 14px 14px 14px;
+      color: #33423a;
+      background: #fff;
+      font-size: 14px;
+      line-height: 1.75;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .user .bubble {
+      border-color: #f0dfbd;
+      border-radius: 14px 3px 14px 14px;
+      background: var(--user);
+    }
+
+    .typing { display: inline-flex; gap: 4px; padding: 5px 1px; }
+    .typing i { width: 6px; height: 6px; border-radius: 50%; background: #78907e; animation: bounce .8s infinite alternate; }
+    .typing i:nth-child(2) { animation-delay: .15s; }
+    .typing i:nth-child(3) { animation-delay: .3s; }
+
+    .suggestions { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 30px 20px 69px; }
+    .suggestion {
+      padding: 8px 11px;
+      border: 1px solid #eee2cf;
+      border-radius: 999px;
+      color: #87552c;
+      background: #fffdf9;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background .15s ease, border-color .15s ease;
+    }
+    .suggestion:hover { border-color: #dbb779; background: #fff5df; }
+
+    .composer-wrap { padding: 17px 25px 12px; border-top: 1px solid var(--line); background: #fcfcf8; }
+    .composer {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      padding: 8px 8px 8px 15px;
+      border: 1px solid #e8ddcc;
+      border-radius: 13px;
+      background: #fff;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .composer:focus-within { border-color: #d4a554; box-shadow: 0 0 0 3px rgba(190, 130, 45, .12); }
+    textarea {
+      width: 100%;
+      min-height: 27px;
+      max-height: 120px;
+      resize: none;
+      border: 0;
+      outline: 0;
+      color: var(--ink);
+      background: transparent;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    textarea::placeholder { color: #9aa39b; }
+    .send {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      place-items: center;
+      border: 0;
+      border-radius: 10px;
+      color: #fff;
+      background: var(--green);
+      cursor: pointer;
+      transition: background .15s ease, transform .15s ease;
+    }
+    .send:hover:not(:disabled) { transform: translateY(-1px); background: var(--green-dark); }
+    .send:disabled { cursor: wait; opacity: .58; }
+    .send svg { width: 18px; height: 18px; }
+    .hint { margin: 9px 2px 0; color: #929b93; font-size: 11px; }
+    .disclaimer { margin: 0; padding: 12px 25px 16px; color: #7d877e; font-size: 11px; line-height: 1.65; text-align: center; }
+
+    @keyframes appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bounce { to { transform: translateY(-4px); opacity: .5; } }
+
+    @media (max-width: 560px) {
+      body { padding: 14px 10px; }
+      .topline { margin: 0 4px 11px; }
+      .chat { border-radius: 14px; }
+      .hero { min-height: 110px; padding: 18px; }
+      .conversation { min-height: 42vh; max-height: 52vh; padding: 20px 16px; }
+      .bubble { max-width: 88%; font-size: 13px; }
+      .suggestions { gap: 7px; padding: 0 16px 17px 55px; }
+      .suggestion { font-size: 11px; }
+      .composer-wrap { padding: 13px 13px 10px; }
+      .disclaimer { padding: 10px 15px 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topline">
+      <div class="brand-mark"><span class="sun-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="5.5" stroke="currentColor" stroke-width="2.2"/><path d="M16 2.8v4M16 25.2v4M2.8 16h4m18.4 0h4M6.7 6.7l2.8 2.8m13 13 2.8 2.8m0-18.6-2.8 2.8m-13 13-2.8 2.8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span><span>AyurParam</span></div>
+      <div class="status"><span class="status-dot" aria-hidden="true"></span>Online</div>
+    </div>
+
+    <section class="chat" aria-label="AyurParam chat">
+      <header class="hero" aria-label="AyurParam">
+        <svg class="hero-sun" viewBox="0 0 180 180" fill="none" role="img" aria-label="Gayatri mantra written in a circle around the sun">
+          <defs>
+            <path id="mantra-top" d="M18 90a72 72 0 0 1 144 0"/>
+            <path id="mantra-bottom" d="M162 90a72 72 0 0 1-144 0"/>
+          </defs>
+          <text fill="currentColor" font-family="Nirmala UI, serif" font-size="9.5" letter-spacing=".15">
+            <textPath href="#mantra-top" startOffset="0">ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं</textPath>
+            <textPath href="#mantra-bottom" startOffset="0">भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्</textPath>
+          </text>
+          <circle cx="90" cy="90" r="21" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M90 53v12m0 50v12M53 90h12m50 0h12M63.8 63.8l8.5 8.5m35.4 35.4 8.5 8.5m0-52.4-8.5 8.5m-35.4 35.4-8.5 8.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </header>
+
+      <div class="conversation" id="conversation" role="log" aria-live="polite" aria-relevant="additions">
+        <div class="message">
+          <div class="avatar" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="5.5" stroke="currentColor" stroke-width="2.2"/><path d="M16 2.8v4M16 25.2v4M2.8 16h4m18.4 0h4M6.7 6.7l2.8 2.8m13 13 2.8 2.8m0-18.6-2.8 2.8m-13 13-2.8 2.8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+          <div class="bubble">Namaste! Main AyurParam hoon. Aaj main aapki kis tarah madad kar sakta hoon?</div>
+        </div>
+      </div>
+
+      <div class="suggestions" id="suggestions" aria-label="Suggested questions">
+        <button class="suggestion" type="button">Achchi neend ke liye kya karoon?</button>
+        <button class="suggestion" type="button">Din bhar energy kaise banaaye rakhoon?</button>
+        <button class="suggestion" type="button">Ayurveda mein dincharya kya hoti hai?</button>
+      </div>
+
+      <form class="composer-wrap" id="chat-form">
+        <div class="composer">
+          <textarea id="question" rows="1" placeholder="Type your question..." aria-label="Type your question" required></textarea>
+          <button class="send" id="send" type="submit" aria-label="Send question" title="Send question">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <p class="hint">Press Enter to send · Shift + Enter for a new line</p>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const API = "https://gibraltar-assessed-consultants-airports.trycloudflare.com";
+    const form = document.getElementById("chat-form");
+    const input = document.getElementById("question");
+    const sendButton = document.getElementById("send");
+    const conversation = document.getElementById("conversation");
+    const suggestions = document.getElementById("suggestions");
+
+    function addMessage(text, role) {
+      const message = document.createElement("div");
+      message.className = `message ${role}`;
+
+      if (role === "assistant") {
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        avatar.setAttribute("aria-hidden", "true");
+        avatar.innerHTML = '<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="5.5" stroke="currentColor" stroke-width="2.2"/><path d="M16 2.8v4M16 25.2v4M2.8 16h4m18.4 0h4M6.7 6.7l2.8 2.8m13 13 2.8 2.8m0-18.6-2.8 2.8m-13 13-2.8 2.8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+        message.appendChild(avatar);
+      }
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = text;
+      message.appendChild(bubble);
+      conversation.appendChild(message);
+      conversation.scrollTop = conversation.scrollHeight;
+      return message;
+    }
+
+    async function ask(question) {
+      const text = question.trim();
+      if (!text || sendButton.disabled) return;
+
+      addMessage(text, "user");
+      input.value = "";
+      input.style.height = "auto";
+      suggestions.hidden = true;
+      sendButton.disabled = true;
+
+      const pending = addMessage("", "assistant");
+      const bubble = pending.querySelector(".bubble");
+      const typing = document.createElement("span");
+      typing.className = "typing";
+      typing.setAttribute("aria-label", "Generating a reply");
+      typing.innerHTML = "<i></i><i></i><i></i>";
+      bubble.appendChild(typing);
+
+      try {
+        const response = await fetch(API + "/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: text })
+        });
+        if (!response.ok) throw new Error("Request failed");
+        const data = await response.json();
+        if (typeof data.answer !== "string" || !data.answer.trim()) throw new Error("Answer unavailable");
+        bubble.textContent = data.answer;
+      } catch (error) {
+        bubble.textContent = "Maaf kijiye, abhi jawab nahi mil paaya. Connection check karke dobara koshish karein.";
+      } finally {
+        sendButton.disabled = false;
+        input.focus();
+        conversation.scrollTop = conversation.scrollHeight;
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      ask(input.value);
+    });
+
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    suggestions.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (button) ask(button.textContent);
+    });
+  </script>
+</body>
+</html>
