@@ -6,11 +6,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const token = process.env.HF_TOKEN;
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`
-  };
+  const headers = { "Content-Type": "application/json" };
 
   try {
     const postRes = await fetch(HF_SPACE_API, {
@@ -25,9 +21,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const getRes = await fetch(`${HF_SPACE_API}/${encodeURIComponent(eventId)}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const getRes = await fetch(`${HF_SPACE_API}/${encodeURIComponent(eventId)}`);
     const text = await getRes.text();
 
     let answer = null;
