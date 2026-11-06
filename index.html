@@ -330,7 +330,7 @@
       const request = await fetch(API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: [question] })
+        body: JSON.stringify({ data: [question, []] })
       });
       if (!request.ok) throw new Error(`Hugging Face request failed (${request.status})`);
 
