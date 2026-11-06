@@ -347,7 +347,9 @@
         const lines = event.split(/\r?\n/);
         const name = lines.find((line) => line.startsWith("event:"))?.slice(6).trim();
         const data = lines.find((line) => line.startsWith("data:"))?.slice(5).trim();
-        if (name === "error") throw new Error("Hugging Face chat generation failed");
+        if (name === "error") {
+          throw new Error(`Hugging Face chat generation failed${data ? `: ${data}` : ""}`);
+        }
         if (name === "complete" && data) {
           payload = JSON.parse(data);
           completed = true;
