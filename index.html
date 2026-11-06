@@ -67,6 +67,8 @@
     .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #78a16e; }
 
     .chat {
+      position: relative;
+      isolation: isolate;
       overflow: hidden;
       border: 1px solid rgba(220, 226, 216, .9);
       border-radius: 18px;
@@ -74,31 +76,31 @@
       box-shadow: var(--shadow);
     }
 
+    .chat::before {
+      position: absolute;
+      z-index: 0;
+      inset: 0;
+      background: url("assets/9028195-clean.jpg") center 38% / cover no-repeat;
+      content: "";
+      opacity: .5;
+      pointer-events: none;
+    }
+
+    .chat > * { position: relative; z-index: 1; }
+
     .hero {
       position: relative;
       display: grid;
       min-height: 124px;
       place-items: center;
       overflow: hidden;
-      padding: 20px;
+      padding: 0;
       color: #713e18;
-      background: #f2bd55;
+      background: transparent;
     }
 
-    .hero::after {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 84px;
-      height: 84px;
-      border: 1px solid rgba(255, 250, 229, .45);
-      border-radius: 50%;
-      box-shadow: 0 0 0 15px rgba(255, 250, 229, .15), 0 0 0 31px rgba(255, 250, 229, .11);
-      content: "";
-      transform: translate(-50%, -50%);
-    }
-
-    .hero-sun { position: relative; z-index: 1; width: 122px; height: 122px; overflow: visible; transform: translateY(-10px); }
+    .logo-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .hero-logo { display: block; width: 270px; max-width: 100%; height: auto; }
 
     .conversation {
       display: flex;
@@ -119,12 +121,10 @@
       height: 29px;
       flex: 0 0 29px;
       place-items: center;
-      border: 1px solid #f0dfc0;
-      border-radius: 10px;
-      color: #a6531b;
-      background: #fff7e8;
+      overflow: hidden;
+      border-radius: 50%;
     }
-    .avatar svg { width: 18px; height: 18px; }
+    .avatar svg { display: block; width: 100%; height: 100%; }
 
     .bubble {
       max-width: min(84%, 510px);
@@ -230,6 +230,31 @@
 </head>
 <body>
   <main class="shell">
+    <svg class="logo-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <symbol id="ayurparam-logo" viewBox="0 0 680 340">
+        <defs>
+          <path id="ayurparam-arc" d="M 219 170 A 121 121 0 0 1 461 170" fill="none"/>
+          <polygon id="ayurparam-ray" points="340,138 333,120 347,120"/>
+        </defs>
+        <circle cx="340" cy="170" r="150" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+        <circle cx="340" cy="170" r="92" fill="#FAC775"/>
+        <g fill="#D88A2A">
+          <use href="#ayurparam-ray" transform="rotate(0 340 170)"/>
+          <use href="#ayurparam-ray" transform="rotate(45 340 170)"/>
+          <use href="#ayurparam-ray" transform="rotate(90 340 170)"/>
+          <use href="#ayurparam-ray" transform="rotate(135 340 170)"/>
+          <use href="#ayurparam-ray" transform="rotate(180 340 170)"/>
+          <use href="#ayurparam-ray" transform="rotate(225 340 170)"/>
+          <use href="#ayurparam-ray" transform="rotate(270 340 170)"/>
+          <use href="#ayurparam-ray" transform="rotate(315 340 170)"/>
+        </g>
+        <circle cx="340" cy="170" r="26" fill="#D88A2A" stroke="#854F0B" stroke-width="1"/>
+        <text font-size="17" font-weight="500" fill="#633806" textLength="375" lengthAdjust="spacingAndGlyphs">
+          <textPath href="#ayurparam-arc" startOffset="50%" text-anchor="middle">स्वस्थस्य स्वास्थ्य रक्षणं, आतुरस्य विकार प्रशमनं च</textPath>
+        </text>
+      </symbol>
+    </svg>
+
     <div class="topline">
       <div class="brand-mark"><span class="sun-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="5.5" stroke="currentColor" stroke-width="2.2"/><path d="M16 2.8v4M16 25.2v4M2.8 16h4m18.4 0h4M6.7 6.7l2.8 2.8m13 13 2.8 2.8m0-18.6-2.8 2.8m-13 13-2.8 2.8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span><span>AyurParam</span></div>
       <div class="status"><span class="status-dot" aria-hidden="true"></span>Online</div>
@@ -237,23 +262,14 @@
 
     <section class="chat" aria-label="AyurParam chat">
       <header class="hero" aria-label="AyurParam">
-        <svg class="hero-sun" viewBox="0 0 180 180" fill="none" role="img" aria-label="Gayatri mantra written in a circle around the sun">
-          <defs>
-            <path id="mantra-top" d="M18 90a72 72 0 0 1 144 0"/>
-            <path id="mantra-bottom" d="M162 90a72 72 0 0 1-144 0"/>
-          </defs>
-          <text fill="currentColor" font-family="Nirmala UI, serif" font-size="9.5" letter-spacing=".15">
-            <textPath href="#mantra-top" startOffset="0">ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं</textPath>
-            <textPath href="#mantra-bottom" startOffset="0">भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्</textPath>
-          </text>
-          <circle cx="90" cy="90" r="21" stroke="currentColor" stroke-width="2.5"/>
-          <path d="M90 53v12m0 50v12M53 90h12m50 0h12M63.8 63.8l8.5 8.5m35.4 35.4 8.5 8.5m0-52.4-8.5 8.5m-35.4 35.4-8.5 8.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        <svg class="hero-logo" viewBox="0 0 680 340" role="img" aria-label="AyurParam logo">
+          <use href="#ayurparam-logo"/>
         </svg>
       </header>
 
       <div class="conversation" id="conversation" role="log" aria-live="polite" aria-relevant="additions">
         <div class="message">
-          <div class="avatar" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="5.5" stroke="currentColor" stroke-width="2.2"/><path d="M16 2.8v4M16 25.2v4M2.8 16h4m18.4 0h4M6.7 6.7l2.8 2.8m13 13 2.8 2.8m0-18.6-2.8 2.8m-13 13-2.8 2.8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+          <div class="avatar" aria-hidden="true"><svg viewBox="190 20 300 300"><use href="#ayurparam-logo"/></svg></div>
           <div class="bubble">Namaste! Main AyurParam hoon. Aaj main aapki kis tarah madad kar sakta hoon?</div>
         </div>
       </div>
@@ -277,7 +293,7 @@
   </main>
 
   <script>
-    const API = "https://gibraltar-assessed-consultants-airports.trycloudflare.com";
+    const API = "https://25f3001314-ayurparam-api.hf.space/gradio_api/call/chat";
     const form = document.getElementById("chat-form");
     const input = document.getElementById("question");
     const sendButton = document.getElementById("send");
@@ -292,7 +308,12 @@
         const avatar = document.createElement("div");
         avatar.className = "avatar";
         avatar.setAttribute("aria-hidden", "true");
-        avatar.innerHTML = '<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="5.5" stroke="currentColor" stroke-width="2.2"/><path d="M16 2.8v4M16 25.2v4M2.8 16h4m18.4 0h4M6.7 6.7l2.8 2.8m13 13 2.8 2.8m0-18.6-2.8 2.8m-13 13-2.8 2.8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+        const avatarLogo = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        avatarLogo.setAttribute("viewBox", "190 20 300 300");
+        const avatarMark = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        avatarMark.setAttribute("href", "#ayurparam-logo");
+        avatarLogo.appendChild(avatarMark);
+        avatar.appendChild(avatarLogo);
         message.appendChild(avatar);
       }
 
@@ -303,6 +324,41 @@
       conversation.appendChild(message);
       conversation.scrollTop = conversation.scrollHeight;
       return message;
+    }
+
+    async function getAnswer(question) {
+      const request = await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: [question] })
+      });
+      if (!request.ok) throw new Error(`Hugging Face request failed (${request.status})`);
+
+      const { event_id: eventId } = await request.json();
+      if (typeof eventId !== "string" || !eventId) throw new Error("Hugging Face did not return an event ID");
+
+      const result = await fetch(`${API}/${encodeURIComponent(eventId)}`);
+      if (!result.ok) throw new Error(`Hugging Face response failed (${result.status})`);
+
+      const events = (await result.text()).split(/\r?\n\r?\n/);
+      let payload;
+      let completed = false;
+      for (const event of events) {
+        const lines = event.split(/\r?\n/);
+        const name = lines.find((line) => line.startsWith("event:"))?.slice(6).trim();
+        const data = lines.find((line) => line.startsWith("data:"))?.slice(5).trim();
+        if (name === "error") throw new Error("Hugging Face chat generation failed");
+        if (name === "complete" && data) {
+          payload = JSON.parse(data);
+          completed = true;
+        }
+      }
+
+      const answer = Array.isArray(payload) ? payload[0] : payload;
+      if (!completed || typeof answer !== "string" || !answer.trim()) {
+        throw new Error("Hugging Face returned no chat answer");
+      }
+      return answer;
     }
 
     async function ask(question) {
@@ -324,16 +380,9 @@
       bubble.appendChild(typing);
 
       try {
-        const response = await fetch(API + "/ask", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: text })
-        });
-        if (!response.ok) throw new Error("Request failed");
-        const data = await response.json();
-        if (typeof data.answer !== "string" || !data.answer.trim()) throw new Error("Answer unavailable");
-        bubble.textContent = data.answer;
+        bubble.textContent = await getAnswer(text);
       } catch (error) {
+        console.error("Hugging Face chat request failed:", error);
         bubble.textContent = "Maaf kijiye, abhi jawab nahi mil paaya. Connection check karke dobara koshish karein.";
       } finally {
         sendButton.disabled = false;
