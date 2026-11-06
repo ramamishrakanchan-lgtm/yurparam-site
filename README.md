@@ -96,12 +96,56 @@ This is not something this frontend introduced. The base model's own publisher r
 
 The next step is to ground AyurParam's answers in retrieval over classical texts (Charaka Samhita, Sushruta Samhita, Ashtanga Hridaya) instead of relying on the model's unaided recall, so every answer can be traced back to a cited passage. This directly matches the AyushTech Innovate challenge's requirement for source-grounded, hallucination-free solutions with documented safety-verification protocols.
 
-## 10. Team
+## 10. Deployment architecture and known infrastructure limits
+
+### How the pieces connect
+
+```
+Browser  ->  Vercel (static index.html)
+         ->  Vercel serverless proxy (/api/chat)
+         ->  Hugging Face Space (Gradio app, ZeroGPU)  ->  AyurParam model
+```
+
+- **Frontend:** a single `index.html` served by Vercel.
+- **Proxy:** `api/chat.mjs` is a Vercel serverless function. It submits the question to the Space's Gradio API and waits for the answer in the same call, then returns `{ "answer": ... }`.
+- **Backend:** the Hugging Face Space `25f3001314/ayurparam-api` loads `bharatgenai/AyurParam` (about 10 GB of weights) and runs it on ZeroGPU, Hugging Face's shared free GPU pool.
+
+### What went wrong during setup (and how each issue was fixed)
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `POST /ask 404` | The live site still called an old endpoint that the Space no longer had | Switched to the Gradio API (`/gradio_api/call/chat`) |
+| Generic "Maaf kijiye..." reply, no detail | The frontend discarded the real error | Error detail is now logged / returned by the proxy |
+| `/api/chat` returned "Not found", then `FUNCTION_INVOCATION_FAILED` | Vercel did not detect the function, then could not find its export | Added `vercel.json`; converted the handler to an ES module (`.mjs`) |
+| `event: error` with `data: null` | ZeroGPU GPU quota exhausted (see below) | See options below |
+
+### Why ZeroGPU calls fail with `data: null`
+
+- ZeroGPU gives each **signed-in account** or, for anonymous calls, each **IP address** a small daily GPU quota.
+- When the proxy sent our Hugging Face token, every request used our account's quota, which ran out after a day of testing.
+- Without a token, every visitor's request reaches the Space from **Vercel's IP**, so all users share one small anonymous quota.
+- Gradio hides the real error text on its API by default, so the only visible message is `data: null`. The Space now launches with `show_error=True` so the real reason is shown.
+- Each call now reserves 30 seconds of GPU time (`@spaces.GPU(duration=30)`) instead of the default 60, so the same quota covers more calls.
+
+### Why not Render or Streamlit Cloud?
+
+The bottleneck is the GPU, not web hosting. The model needs roughly 10 GB of memory and a GPU. The free tiers of Render and Streamlit Community Cloud offer about 1 GB of RAM and no GPU, so the model cannot load there. They could only host the frontend, which Vercel already does.
+
+### Options to make the chatbot reliable
+
+1. **Call the Space directly from the browser (free):** remove the proxy so each visitor uses their own IP's quota instead of one shared pool.
+2. **Hugging Face PRO:** a much larger daily ZeroGPU allowance; the most reliable choice for a demo day.
+3. **Google Colab + tunnel (free, demo only):** run the model on Colab's free GPU and expose it through a Cloudflare tunnel. It stops when the Colab session ends.
+4. **Paid GPU Space:** dedicated hardware billed per hour, no shared quota.
+
+**Current status:** the proxy path works when quota is available and returns an error when it is used up. Switching to direct browser calls (option 1) is the planned next step, with option 3 as a demo-day backup.
+
+## 11. Team
 
 **Kayakalp**
 - Ashutosh Shri Mishra — Leader
 - Shravani Gawade
 
-## 11. Disclaimer
+## 12. Disclaimer
 
 AyurParam is an educational/research prototype for learning Ayurveda terminology and basic concepts. It is **not** a certified medical device or clinical decision-support tool, has **no** explicit safety mechanisms against harmful medical advice, and must **not** be used for diagnosis, treatment, remedy, or medication guidance. For any real health concern, consult a qualified, registered Ayurveda practitioner or doctor.
