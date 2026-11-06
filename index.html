@@ -332,35 +332,12 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: [question, []] })
       });
-      if (!request.ok) throw new Error(`Hugging Face request failed (${request.status})`);
-
-      const { event_id: eventId } = await request.json();
-      if (typeof eventId !== "string" || !eventId) throw new Error("Hugging Face did not return an event ID");
-
-      const result = await fetch(`${API}?event_id=${encodeURIComponent(eventId)}`);
-      if (!result.ok) throw new Error(`Hugging Face response failed (${result.status})`);
-
-      const events = (await result.text()).split(/\r?\n\r?\n/);
-      let payload;
-      let completed = false;
-      for (const event of events) {
-        const lines = event.split(/\r?\n/);
-        const name = lines.find((line) => line.startsWith("event:"))?.slice(6).trim();
-        const data = lines.find((line) => line.startsWith("data:"))?.slice(5).trim();
-        if (name === "error") {
-          throw new Error(`Hugging Face chat generation failed${data ? `: ${data}` : ""}`);
-        }
-        if (name === "complete" && data) {
-          payload = JSON.parse(data);
-          completed = true;
-        }
+      const body = await request.json();
+      if (!request.ok || !body.answer) {
+        const detail = body.detail || body.error || "unknown";
+        throw new Error("Chat failed: " + JSON.stringify(detail));
       }
-
-      const answer = Array.isArray(payload) ? payload[0] : payload;
-      if (!completed || typeof answer !== "string" || !answer.trim()) {
-        throw new Error("Hugging Face returned no chat answer");
-      }
-      return answer;
+      return body.answer;
     }
 
     async function ask(question) {
