@@ -293,7 +293,7 @@
   </main>
 
   <script>
-    const API = "https://25f3001314-ayurparam-api.hf.space/gradio_api/call/chat";
+    const API = "/api/chat";
     const form = document.getElementById("chat-form");
     const input = document.getElementById("question");
     const sendButton = document.getElementById("send");
@@ -337,7 +337,7 @@
       const { event_id: eventId } = await request.json();
       if (typeof eventId !== "string" || !eventId) throw new Error("Hugging Face did not return an event ID");
 
-      const result = await fetch(`${API}/${encodeURIComponent(eventId)}`);
+      const result = await fetch(`${API}?event_id=${encodeURIComponent(eventId)}`);
       if (!result.ok) throw new Error(`Hugging Face response failed (${result.status})`);
 
       const events = (await result.text()).split(/\r?\n\r?\n/);
